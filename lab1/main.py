@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def rgb_to_grey(img) :
+def rgb_to_grey(img):
     height, width, depth = img.shape
     ret = np.zeros((height, width, 1), np.uint8)
     for x in range(width):
