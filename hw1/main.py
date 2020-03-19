@@ -2,15 +2,14 @@ import cv2
 import numpy as np
 
 def rgb_to_grey(img) :
-    ret = img.copy()
     height, width, depth = img.shape
+    ret = np.zeros((height, width, 1), np.uint8)
     for x in range(width):
         for y in range(height):
             grey_value = 0;
             for z in range(depth):
-                grey_value += ret[y, x, z]
-            for z in range(depth):
-                ret[y, x, z] = grey_value / 3
+                grey_value += img[y, x, z]
+            ret[y, x, 0] = grey_value / 3
     return ret
 
 def nearest_neighbor_interpolation(img, r):
