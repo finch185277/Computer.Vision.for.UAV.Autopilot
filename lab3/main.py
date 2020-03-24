@@ -71,40 +71,37 @@ def otsu_threshold(img):
     return ret
 
 
-def flood_fill(img, ret, x, y, color):
-    height, width, depth = ret.shape
-
-    if img[y, x, 0] != 255:
-        return
-
-    if ret[y, x, 0] != 0 or ret[y, x, 1] != 0 or ret[y, x, 2] != 0:
-        return
-
-    for z in range(depth):
-        ret[y, x, z] = color[z]
-        ret[y, x, z] = color[z]
-        ret[y, x, z] = color[z]
-
-    if x < width - 1:
-        flood_fill(img, ret, x + 1, y, color)
-    if x > 0:
-        flood_fill(img, ret, x - 1, y, color)
-    if y > 0:
-        flood_fill(img, ret, x, y - 1, color)
-    if y < height - 1:
-        flood_fill(img, ret, x, y + 1, color)
-
-
 def seed_filling_algorithm(img):
     img = otsu_threshold(img)
+    label = np.zeros((img.shape[0], img.shape[1]))
     ret = np.zeros((img.shape[0], img.shape[1], 3), np.uint8)
     height, width, depth = ret.shape
 
-    for y in range(height):
-        for x in range(width):
-            if img[y, x, 0] == 255:
+    # BFS (DFS would throw a maximum recursion depth exceeded error)
+    for x in range(width):
+        for y in range(height):
+            if img[y, x, 0] == 255 and label[y, x] == 0:
                 color = [randrange(256), randrange(256), randrange(256)]
-                flood_fill(img, ret, x, y, color)
+                queue = []
+                queue.append((x, y))
+                while queue:
+                    i, j = queue.pop()
+                    for z in range(depth):
+                        ret[j, i, z] = color[z]
+                    label[j, i] = 1
+
+                    if i < width - 1:
+                        if img[j, i + 1, 0] == 255 and label[j, i + 1] == 0:
+                            queue.append((i + 1, j))
+                    if i > 0:
+                        if img[j, i - 1, 0] == 255 and label[j, i - 1] == 0:
+                            queue.append((i - 1, j))
+                    if j < height - 1:
+                        if img[j + 1, i, 0] == 255 and label[j + 1, i] == 0:
+                            queue.append((i, j + 1))
+                    if j > 0:
+                        if img[j - 1, i, 0] == 255 and label[j - 1, i] == 0:
+                            queue.append((i, j - 1))
 
     return ret
 
