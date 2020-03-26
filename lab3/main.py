@@ -27,46 +27,48 @@ def otsu_threshold(img):
         for y in range(height):
             pixel_count[img[y, x, 0]] += 1
 
-    current_pixels = 0
     total_pixels = height * width
     for i in range(256):
-        current_pixels += pixel_count[i]
-        pixel_pros[i] = float(current_pixels)/float(total_pixels)
+        pixel_pros[i] = float(pixel_count[i])/float(total_pixels)
 
     threshold = 0
-    max_delta = 0
-    for i in range(256):
-        w0, w1, t0, t1, u0, u1, u, cur_delta = [0.0 for _ in range(8)]
-        for j in range(256):
-            if j <= i:
-                w0 += pixel_pros[j]
-                t0 += j * pixel_pros[j]
+    max_var = 0
+    for t in range(256):
+        nb = 0
+        no = 0
+        cb = 0
+        co = 0
+        mb = 0
+        mo = 0
+        for i in range(256):
+            if i < t:
+                nb += pixel_count[i]
+                cb += pixel_count[i] * i
             else:
-                w1 += pixel_pros[j]
-                t1 += j * pixel_pros[j]
+                no += pixel_count[i]
+                co += pixel_count[i] * i
 
         try:
-            u0 = t0 / w0
+            mb = cb / nb
         except ZeroDivisionError:
-            u0 = 0
+            mb = 0
 
         try:
-            u1 = t1 / w1
+            mo = co / no
         except ZeroDivisionError:
-            u1 = 0
+            mo = 0
 
-        u = t0 + t1
-        cur_delta = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2)
-        if cur_delta > max_delta:
-            max_delta = cur_delta
-            threshold = i
+        cur_var = nb * no * pow((mb - mo), 2)
+        if cur_var > max_var:
+            threshold = t
+            max_var = cur_var
 
     for x in range(width):
         for y in range(height):
-            if img[y, x, 0] > threshold:
-                ret[y, x, 0] = 255
-            else:
+            if img[y, x, 0] < threshold:
                 ret[y, x, 0] = 0
+            else:
+                ret[y, x, 0] = 255
 
     return ret
 
