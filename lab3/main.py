@@ -104,6 +104,84 @@ def seed_filling_algorithm(img):
                     if j > 0:
                         if img[j - 1, i, 0] == 255 and label[j - 1, i] == 0:
                             queue.append((i, j - 1))
+    return ret
+
+
+def seed_filling_algorithm2(img):
+    img = otsu_threshold(img)
+    label = np.zeros((img.shape[0], img.shape[1]))
+    ret = np.zeros((img.shape[0], img.shape[1], 3), np.uint8)
+    height, width, depth = ret.shape
+
+    cur_label = 1
+    equl_set = [set() for _ in xrange(height * width)]
+
+    for x in range(width):
+        for y in range(height):
+            if img[y, x, 0] == 255:
+                if label[y, x - 1] != 0 and label[y - 1, x] != 0 and label[y, x - 1] != label[y - 1, x]:
+                    min_label = min(label[y, x - 1], label[y - 1, x])
+                    label[y, x] = min_label
+
+                    xl = 0  # x label
+                    yl = 0  # y label
+
+                    if label[y, x - 1] in equl_set[int(label[y, x - 1])]:
+                        xl = label[y, x - 1]
+                    else:
+                        for lab in range(int(label[y, x - 1])):
+                            if label[y, x - 1] in equl_set[lab]:
+                                xl = lab
+                                break
+
+                    if label[y - 1, x] in equl_set[int(label[y - 1, x])]:
+                        yl = label[y - 1, x]
+                    else:
+                        for lab in range(int(label[y - 1, x])):
+                            if label[y - 1, x] in equl_set[lab]:
+                                yl = lab
+                                break
+
+                    if xl != yl:
+                        if label[y, x - 1] < label[y - 1, x]:
+                            equl_set[int(xl)] = equl_set[int(xl)].union(equl_set[int(yl)])
+                            equl_set[int(yl)].clear()
+                        else:
+                            equl_set[int(yl)] = equl_set[int(yl)].union(equl_set[int(xl)])
+                            equl_set[int(xl)].clear()
+
+                elif label[y, x - 1] != 0:
+                    label[y, x] = label[y, x - 1]
+
+                elif label[y - 1, x] != 0:
+                    label[y, x] = label[y - 1, x]
+
+                elif label[y, x - 1] == 0 and label[y - 1, x] == 0:
+                    label[y, x] = cur_label
+                    equl_set[cur_label].add(cur_label)
+                    cur_label += 1
+
+    colors = np.zeros((cur_label, 3))
+    for i in range(cur_label):
+        for j in range(3):
+            colors[i, j] = randrange(256)
+
+    fixed_label = np.zeros((cur_label))
+    for lab in range(cur_label):
+        if lab in equl_set[lab]:
+            fixed_label[lab] = lab
+            continue
+        else:
+            for ex_lab in range(cur_label):
+                if lab in equl_set[ex_lab]:
+                    fixed_label[lab] = ex_lab
+                    break
+
+    for x in range(width):
+        for y in range(height):
+            if img[y, x, 0] == 255:
+                for z in range(depth):
+                    ret[y, x, z] = colors[int(fixed_label[int(label[y, x])]), z]
 
     return ret
 
@@ -112,11 +190,13 @@ img1 = cv2.imread('input.jpg')
 
 demo1 = otsu_threshold(img1)
 demo2 = seed_filling_algorithm(img1)
+demo3 = seed_filling_algorithm2(img1)
 
 cv2.imshow('Image 1', img1)
 
 cv2.imshow('Demo 1', demo1)
 cv2.imshow('Demo 2', demo2)
+cv2.imshow('Demo 3', demo3)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
