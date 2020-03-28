@@ -119,60 +119,83 @@ def seed_filling_algorithm2(img):
     for x in range(width):
         for y in range(height):
             if img[y, x, 0] == 255:
-                if label[y, x - 1] != 0 and label[y - 1, x] != 0 and label[y, x - 1] != label[y - 1, x]:
-                    min_label = min(label[y, x - 1], label[y - 1, x])
-                    label[y, x] = min_label
-
-                    xl = 0  # x label
-                    yl = 0  # y label
-
-                    if label[y, x - 1] in equl_set[int(label[y, x - 1])]:
-                        xl = label[y, x - 1]
-                    else:
-                        for lab in range(int(label[y, x - 1])):
-                            if label[y, x - 1] in equl_set[lab]:
-                                xl = lab
-                                break
-
-                    if label[y - 1, x] in equl_set[int(label[y - 1, x])]:
-                        yl = label[y - 1, x]
-                    else:
-                        for lab in range(int(label[y - 1, x])):
-                            if label[y - 1, x] in equl_set[lab]:
-                                yl = lab
-                                break
-
-                    if xl != yl:
-                        if label[y, x - 1] < label[y - 1, x]:
-                            equl_set[int(xl)] = equl_set[int(xl)].union(equl_set[int(yl)])
-                            equl_set[int(yl)].clear()
-                        else:
-                            equl_set[int(yl)] = equl_set[int(yl)].union(equl_set[int(xl)])
-                            equl_set[int(xl)].clear()
-
-                elif label[y, x - 1] != 0:
-                    label[y, x] = label[y, x - 1]
-
-                elif label[y - 1, x] != 0:
-                    label[y, x] = label[y - 1, x]
-
-                elif label[y, x - 1] == 0 and label[y - 1, x] == 0:
+                if x == 0 and y == 0:
                     label[y, x] = cur_label
                     equl_set[cur_label].add(cur_label)
                     cur_label += 1
 
+                if x > 0 and y == 0:
+                    if label[y, x - 1] != 0:
+                        label[y, x] = label[y, x - 1]
+                    else:
+                        label[y, x] = cur_label
+                        equl_set[cur_label].add(cur_label)
+                        cur_label += 1
+
+                if x == 0 and y > 0:
+                    if label[y - 1, x] != 0:
+                        label[y, x] = label[y - 1, x]
+                    else:
+                        label[y, x] = cur_label
+                        equl_set[cur_label].add(cur_label)
+                        cur_label += 1
+
+                if x > 0 and y > 0:
+                    if label[y, x - 1] != 0 and label[y - 1, x] != 0:
+                        min_label = min(label[y, x - 1], label[y - 1, x])
+                        label[y, x] = min_label
+
+                        if label[y, x - 1] != label[y - 1, x]:
+                            xl = 0  # x label
+                            yl = 0  # y label
+
+                            if label[y, x - 1] in equl_set[int(label[y, x - 1])]:
+                                xl = label[y, x - 1]
+                            else:
+                                for lab in range(1, int(label[y, x - 1])):
+                                    if label[y, x - 1] in equl_set[lab]:
+                                        xl = lab
+                                        break
+
+                            if label[y - 1, x] in equl_set[int(label[y - 1, x])]:
+                                yl = label[y - 1, x]
+                            else:
+                                for lab in range(1, int(label[y - 1, x])):
+                                    if label[y - 1, x] in equl_set[lab]:
+                                        yl = lab
+                                        break
+
+                            if xl != yl:
+                                if xl < yl:
+                                    equl_set[int(xl)] = equl_set[int(xl)].union(equl_set[int(yl)])
+                                    equl_set[int(yl)].clear()
+                                else:
+                                    equl_set[int(yl)] = equl_set[int(yl)].union(equl_set[int(xl)])
+                                    equl_set[int(xl)].clear()
+
+                    if label[y, x - 1] != 0 and label[y - 1, x] == 0:
+                        label[y, x] = label[y, x - 1]
+
+                    if label[y - 1, x] != 0 and label[y, x - 1] == 0:
+                        label[y, x] = label[y - 1, x]
+
+                    if label[y, x - 1] == 0 and label[y - 1, x] == 0:
+                        label[y, x] = cur_label
+                        equl_set[cur_label].add(cur_label)
+                        cur_label += 1
+
     colors = np.zeros((cur_label, 3))
-    for i in range(cur_label):
+    for i in range(1, cur_label):
         for j in range(3):
             colors[i, j] = randrange(256)
 
     fixed_label = np.zeros((cur_label))
-    for lab in range(cur_label):
+    for lab in range(1, cur_label):
         if lab in equl_set[lab]:
             fixed_label[lab] = lab
             continue
         else:
-            for ex_lab in range(cur_label):
+            for ex_lab in range(1, cur_label):
                 if lab in equl_set[ex_lab]:
                     fixed_label[lab] = ex_lab
                     break
