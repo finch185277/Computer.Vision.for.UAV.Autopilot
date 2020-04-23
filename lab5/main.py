@@ -82,10 +82,6 @@ while True:
 
   frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-
-  cv2.imshow("frame",frame)
-  key = cv2.waitKey(1)
-
   cv2.imshow("Image",frame)
   cv2.waitKey(1)
 
