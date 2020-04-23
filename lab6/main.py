@@ -5,6 +5,7 @@ import glob
 import tello
 from tello_control_ui import TelloUI
 import time
+import math
 
 #define and store value of the board dimensions inside the testboard list.
 testboard = (5,7)
@@ -67,7 +68,8 @@ drone = tello.Tello('', 8889)
 
 time.sleep(5)
 
-distance = 0.3
+drone_distance = 50
+move_distance = 0.3 # meter
 
 while True:
 
@@ -79,18 +81,31 @@ while True:
   rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(markerCorners,13.8,mtx, dist)
   if rvec is not None:
     frame = cv2.aruco.drawAxis(frame,mtx,dist,rvec,tvec,6)
-    # cv2.putText(frame,'X: %f' % (tvec[0][0][0]),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
-    # cv2.putText(frame,'Y: %f' % (tvec[0][0][1]),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
+    cv2.putText(frame,'X: %f' % (tvec[0][0][0]),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
+    cv2.putText(frame,'Y: %f' % (tvec[0][0][1]),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
     cv2.putText(frame,'Z: %f' % (tvec[0][0][2]),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
-    if tvec[0][0][2] > 50:
-        drone.move_forward(distance)
-    else:
-        drone.move_backward(distance)
 
+    # calculate degree
+    rmat = cv2.Rodrigues(rvec)
+    v = [rmat[0][0][2], rmat[0][1][2], rmat[0][2][2]]
+    rad = math.atan2(v[0], v[2])
+    degree = math.degrees(rad)
+
+    # rotate
+    if degree > 0:
+        drone.rotate_ccw(180 - degree)
+    else:
+        drone.rotate_cw(180 + degree)
+
+    # forward or backward
+    if tvec[0][0][2] > drone_distance:
+        drone.move_forward(move_distance)
+    else:
+        drone.move_backward(move_distance)
 
   frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-  cv2.imshow("Image",frame)
+  cv2.imshow("Image", frame)
   key = cv2.waitKey(1)
 
   if key != -1:
