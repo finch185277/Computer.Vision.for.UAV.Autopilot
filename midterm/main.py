@@ -11,17 +11,6 @@ import math
 testboard = (5,7)
 
 #criteria is the type termcriteria
-
-#Termcriteria(int type,int maxCount, double epsilon)
-#This criteria is used to define when to stop when refining checkboard corners, that is,
-#get the coordinates fit with the corners more precisely.
-
-#type defines the condition to stop, cv2.TERM_CRITERIA_EPS means to stop when the epsilon is satisfied,
-#while cv2.TERM_CRITERIA_MAX_ITER means to stop the refining procedure after max times of iterations
-# use these together suing a + notation
-
-# 50 means the max times of iterations is 50
-# 0.001 stands for epsilon
 criteria =  (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER , 50, 0.001)
 
 #This vector store vectors of 3D points for each image
