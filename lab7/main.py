@@ -42,16 +42,16 @@ images = glob.glob('./images/*.jpg')
 gray = cv2.imread('./images/1.jpg')
 
 for fname in images:
-  print(fname)
-  im = cv2.imread(fname)
-  gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-  ret, corners = cv2.findChessboardCorners(gray, testboard)
+    print(fname)
+    im = cv2.imread(fname)
+    gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    ret, corners = cv2.findChessboardCorners(gray, testboard)
 
-  if ret == True:
-    objpoints.append(objp)
-    corners2 = cv2.cornerSubPix(gray, corners,(11,11),(-1,-1),criteria)
-    imgpoints.append(corners2)
-    im = cv2.drawChessboardCorners(im,testboard,corners2, ret)
+    if ret == True:
+        objpoints.append(objp)
+        corners2 = cv2.cornerSubPix(gray, corners,(11,11),(-1,-1),criteria)
+        imgpoints.append(corners2)
+        im = cv2.drawChessboardCorners(im,testboard,corners2, ret)
 
 cv2.destroyAllWindows()
 
@@ -79,68 +79,66 @@ backward_distance = 0.05
 
 land = 0
 while True:
-  if not land:
-      frame = drone.read()
-      markerCorners, markerlds, rejectedCandidates = cv2.aruco.detectMarkers(frame,dictionary,parameters = parameters)
-      if markerlds is not None:
-          aruco_id = markerlds[0][0]
+    if not land:
+        frame = drone.read()
+        markerCorners, markerlds, rejectedCandidates = cv2.aruco.detectMarkers(frame,dictionary,parameters = parameters)
+        if markerlds is not None:
+            aruco_id = markerlds[0][0]
 
-          frame = cv2.aruco.drawDetectedMarkers(frame,markerCorners,markerlds)
+            frame = cv2.aruco.drawDetectedMarkers(frame,markerCorners,markerlds)
 
-          rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(markerCorners,14.5,mtx, dist)
-          if rvec is not None:
-            cv2.putText(frame,'X: %f' % (tvec[0][0][0]),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
-            cv2.putText(frame,'Y: %f' % (tvec[0][0][1]),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
-            cv2.putText(frame,'Z: %f' % (tvec[0][0][2]),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(markerCorners,14.5,mtx, dist)
+            if rvec is not None:
+                cv2.putText(frame,'X: %f' % (tvec[0][0][0]),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
+                cv2.putText(frame,'Y: %f' % (tvec[0][0][1]),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
+                cv2.putText(frame,'Z: %f' % (tvec[0][0][2]),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
 
-            if aruco_id == 1:
-                # calculate degree
-                rmat = cv2.Rodrigues(rvec[0])
-                v = [rmat[0][0][2], rmat[0][1][2], rmat[0][2][2]]
-                rad = math.atan2(v[0], v[2])
-                degree = math.degrees(rad)
+                if aruco_id == 1:
+                    # calculate degree
+                    rmat = cv2.Rodrigues(rvec[0])
+                    v = [rmat[0][0][2], rmat[0][1][2], rmat[0][2][2]]
+                    rad = math.atan2(v[0], v[2])
+                    degree = math.degrees(rad)
 
-                # rotate
-                if degree > 0:
-                    drone.rotate_ccw(180 - degree)
-                else:
-                    drone.rotate_cw(180 + degree)
+                    # rotate
+                    if degree > 0:
+                        drone.rotate_ccw(180 - degree)
+                    else:
+                        drone.rotate_cw(180 + degree)
 
-                # forward or backward
-                if tvec[0][0][2] > drone_distance:
-                    drone.move_forward(move_distance)
-                else:
-                    drone.move_backward(move_distance)
+                    # forward or backward
+                    if tvec[0][0][2] > drone_distance:
+                        drone.move_forward(move_distance)
+                    else:
+                        drone.move_backward(move_distance)
 
-            if aruco_id == 4:
-                # right or left
-                if tvec[0][0][0] > 0:
-                    drone.move_right(tvec[0][0][0] / 100)
-                else:
-                    drone.move_left(-(tvec[0][0][0]) / 100)
+                if aruco_id == 4:
+                    # right or left
+                    if tvec[0][0][0] > 0:
+                        drone.move_right(tvec[0][0][0] / 100)
+                    else:
+                        drone.move_left(-(tvec[0][0][0]) / 100)
 
-                # forward or backward
-                dis1 = drone_distance - distance_error
-                dis2 = drone_distance + distance_error
-                if tvec[0][0][2] >= dis1 and tvec[0][0][2] <= dis2:
-                    print("should land!!")
-                    #for i in range(10):
-                    #    drone.move_down(0.1)
-                    drone.land()
-                    land = 1
-                elif tvec[0][0][2] > drone_distance:
-                    print("far dis: ", tvec[0][0][2])
-                    drone.move_forward(forward_distance)
-                elif tvec[0][0][2] < drone_distance:
-                    print("low dis: ", tvec[0][0][2])
-                    drone.move_backward(back_distance)
+                    # forward or backward
+                    dis1 = drone_distance - distance_error
+                    dis2 = drone_distance + distance_error
+                    if tvec[0][0][2] >= dis1 and tvec[0][0][2] <= dis2:
+                        print("should land!!")
+                        drone.land()
+                        land = 1
+                    elif tvec[0][0][2] > drone_distance:
+                        print("distance: ", tvec[0][0][2])
+                        drone.move_forward(forward_distance)
+                    elif tvec[0][0][2] < drone_distance:
+                        print("distance: ", tvec[0][0][2])
+                        drone.move_backward(back_distance)
 
-  cv2.imshow("Image", frame)
-  key = cv2.waitKey(1)
+    cv2.imshow("Image", frame)
+    key = cv2.waitKey(1)
 
-  if key != -1:
-    drone.keyboard(key)
+    if key != -1:
+        drone.keyboard(key)
 
 f.release()
