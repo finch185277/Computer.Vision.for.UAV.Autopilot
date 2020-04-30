@@ -89,7 +89,6 @@ while True:
 
           rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(markerCorners,14.5,mtx, dist)
           if rvec is not None:
-            frame = cv2.aruco.drawAxis(frame,mtx,dist,rvec,tvec,6)
             cv2.putText(frame,'X: %f' % (tvec[0][0][0]),(10,40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
             cv2.putText(frame,'Y: %f' % (tvec[0][0][1]),(10,80),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
             cv2.putText(frame,'Z: %f' % (tvec[0][0][2]),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1,cv2.LINE_AA)
@@ -98,7 +97,7 @@ while True:
 
             if aruco_id == 1:
                 # calculate degree
-                rmat = cv2.Rodrigues(rvec)
+                rmat = cv2.Rodrigues(rvec[0])
                 v = [rmat[0][0][2], rmat[0][1][2], rmat[0][2][2]]
                 rad = math.atan2(v[0], v[2])
                 degree = math.degrees(rad)
@@ -116,6 +115,12 @@ while True:
                     drone.move_backward(move_distance)
 
             if aruco_id == 4:
+                # right or left
+                if tvec[0][0][0] > 0:
+                    drone.move_right(tvec[0][0][0] / 100)
+                else:
+                    drone.move_left(-(tvec[0][0][0]) / 100)
+
                 # forward or backward
                 dis1 = drone_distance - distance_error
                 dis2 = drone_distance + distance_error
