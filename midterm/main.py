@@ -60,6 +60,7 @@ time.sleep(5)
 # centimeters
 drone_distance = 50
 distance_error = 10
+horizon_error = 3
 
 # meters
 move_distance = 0.2
@@ -114,6 +115,12 @@ while True:
                 lowest_distance = drone_distance - distance_error
                 uppest_distance = drone_distance + distance_error
                 if tvec[0][0][2] >= lowest_distance and tvec[0][0][2] <= uppest_distance:
+                    if tvec[0][0][0] < -(horizon_error) or tvec[0][0][0] > horizon_error:
+                        if tvec[0][0][0] > 0:
+                            drone.move_right(tvec[0][0][0] / 100)
+                        else:
+                            drone.move_left(-(tvec[0][0][0]) / 100)
+                        continue
                     print("land!!")
                     drone.land()
                     is_land = 1
