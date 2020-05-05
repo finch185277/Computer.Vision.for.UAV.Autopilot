@@ -58,15 +58,22 @@ drone = tello.Tello('', 8889)
 time.sleep(5)
 
 # centimeters
-drone_distance = 50
+drone_distance0 = 50 # for id == 1
+drone_distance1 = 95 # for id == 11
+drone_distance2 = 60 # for id == 4
 distance_error = 10
 horizon_error = 3
+lr_bound = 10
 
 # meters
-move_distance = 0.2
+# for id == 1
+move_forward_distance = 0.3
+move_backward_distance = 0.2
+# for id == 4, 11
 forward_distance = 0.2
 backward_distance = 0.05
 
+rotate_bound = 10
 is_land = 0
 
 while True:
@@ -86,6 +93,7 @@ while True:
             cv2.putText(frame, 'Z: %f' % (tvec[0][0][2]), (10,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1, cv2.LINE_AA)
 
             if aruco_id == 1:
+                print(1)
                 # calculate degree
                 rmat = cv2.Rodrigues(rvec[0])
                 v = [rmat[0][0][2], rmat[0][1][2], rmat[0][2][2]]
@@ -94,26 +102,32 @@ while True:
 
                 # rotate
                 if degree > 0:
-                    drone.rotate_ccw(180 - degree)
+                    degree = 180 - degree
+                    if degree > rotate_bound:
+                        drone.rotate_ccw(degree)
                 else:
-                    drone.rotate_cw(180 + degree)
+                    degree = 180 + degree
+                    if degree > rotate_bound:
+                        drone.rotate_cw(degree)
 
                 # forward or backward
-                if tvec[0][0][2] > drone_distance:
-                    drone.move_forward(move_distance)
+                if tvec[0][0][2] > drone_distance0:
+                    drone.move_forward(move_forward_distance)
                 else:
-                    drone.move_backward(move_distance)
+                    drone.move_backward(move_backward_distance)
 
-            if aruco_id == 4:
+            elif aruco_id == 4:
+                print(4)
                 # right or left
-                if tvec[0][0][0] > 0:
-                    drone.move_right(tvec[0][0][0] / 100)
-                else:
-                    drone.move_left(-(tvec[0][0][0]) / 100)
+                if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
+                    if tvec[0][0][0] > 0:
+                        drone.move_right(tvec[0][0][0] / 100)
+                    else:
+                        drone.move_left(-(tvec[0][0][0]) / 100)
 
                 # forward or backward
-                lowest_distance = drone_distance - distance_error
-                uppest_distance = drone_distance + distance_error
+                lowest_distance = drone_distance2 - distance_error
+                uppest_distance = drone_distance2 + distance_error
                 if tvec[0][0][2] >= lowest_distance and tvec[0][0][2] <= uppest_distance:
                     if tvec[0][0][0] < -(horizon_error) or tvec[0][0][0] > horizon_error:
                         if tvec[0][0][0] > 0:
@@ -121,15 +135,46 @@ while True:
                         else:
                             drone.move_left(-(tvec[0][0][0]) / 100)
                         continue
-                    print("land!!")
-                    drone.land()
-                    is_land = 1
-                elif tvec[0][0][2] > drone_distance:
+                    else:
+                        print("land!!")
+                        drone.land()
+                        is_land = 1
+                elif tvec[0][0][2] > drone_distance2:
                     print("distance: ", tvec[0][0][2])
                     drone.move_forward(forward_distance)
-                elif tvec[0][0][2] < drone_distance:
+                elif tvec[0][0][2] < drone_distance2:
                     print("distance: ", tvec[0][0][2])
                     drone.move_backward(back_distance)
+
+            elif aruco_id == 11:
+                print(11)
+                # right or left
+                if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
+                    if tvec[0][0][0] > 0:
+                        drone.move_right(tvec[0][0][0] / 100)
+                    else:
+                        drone.move_left(-(tvec[0][0][0]) / 100)
+
+                # forward or backward
+                lowest_distance = drone_distance1 - distance_error
+                uppest_distance = drone_distance1 + distance_error
+                if tvec[0][0][2] >= lowest_distance and tvec[0][0][2] <= uppest_distance:
+                    if tvec[0][0][0] < -(horizon_error) or tvec[0][0][0] > horizon_error:
+                        if tvec[0][0][0] > 0:
+                            drone.move_right(tvec[0][0][0] / 100)
+                        else:
+                            drone.move_left(-(tvec[0][0][0]) / 100)
+                        continue
+                    else:
+                        print("turn right!!")
+                        drone.rotate_cw(90)
+                elif tvec[0][0][2] > drone_distance1:
+                    print("distance: ", tvec[0][0][2])
+                    drone.move_forward(forward_distance)
+                elif tvec[0][0][2] < drone_distance1:
+                    print("distance: ", tvec[0][0][2])
+                    drone.move_backward(back_distance)
+
 
     # show frame
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
