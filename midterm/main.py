@@ -93,7 +93,6 @@ while True:
             cv2.putText(frame, 'Z: %f' % (tvec[0][0][2]), (10,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1, cv2.LINE_AA)
 
             if aruco_id == 1:
-                print(1)
                 # calculate degree
                 rmat = cv2.Rodrigues(rvec[0])
                 v = [rmat[0][0][2], rmat[0][1][2], rmat[0][2][2]]
@@ -117,7 +116,6 @@ while True:
                     drone.move_backward(move_backward_distance)
 
             elif aruco_id == 4:
-                print(4)
                 # right or left
                 if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
                     if tvec[0][0][0] > 0:
@@ -136,18 +134,14 @@ while True:
                             drone.move_left(-(tvec[0][0][0]) / 100)
                         continue
                     else:
-                        print("land!!")
                         drone.land()
                         is_land = 1
                 elif tvec[0][0][2] > drone_distance2:
-                    print("distance: ", tvec[0][0][2])
                     drone.move_forward(forward_distance)
                 elif tvec[0][0][2] < drone_distance2:
-                    print("distance: ", tvec[0][0][2])
                     drone.move_backward(back_distance)
 
             elif aruco_id == 11:
-                print(11)
                 # right or left
                 if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
                     if tvec[0][0][0] > 0:
@@ -166,13 +160,10 @@ while True:
                             drone.move_left(-(tvec[0][0][0]) / 100)
                         continue
                     else:
-                        print("turn right!!")
                         drone.rotate_cw(90)
                 elif tvec[0][0][2] > drone_distance1:
-                    print("distance: ", tvec[0][0][2])
                     drone.move_forward(forward_distance)
                 elif tvec[0][0][2] < drone_distance1:
-                    print("distance: ", tvec[0][0][2])
                     drone.move_backward(back_distance)
 
 
