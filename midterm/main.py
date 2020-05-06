@@ -73,7 +73,6 @@ move_backward_distance = 0.1
 # for id == 4, 11
 forward_distance = 0.2
 backward_distance = 0.1
-
 lr_distance = 0.2
 
 is_land = 0
@@ -168,7 +167,7 @@ while True:
                             drone.move_right(tvec[0][0][0] / 100)
                         else:
                             drone.move_left(-(tvec[0][0][0]) / 100)
-                        time.sleep(0.1)
+                        time.sleep(1)
                         is_rotate = 1
                 elif tvec[0][0][2] > drone_distance1:
                     drone.move_forward(forward_distance)
