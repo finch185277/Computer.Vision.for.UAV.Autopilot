@@ -62,19 +62,21 @@ drone_distance0 = 50 # for id == 1
 drone_distance1 = 95 # for id == 11
 drone_distance2 = 60 # for id == 4
 distance_error = 10
-horizon_error = 3
-lr_bound = 10
+horizon_error = 5
+lr_bound = 15
+rotate_bound = 10
 
 # meters
 # for id == 1
-move_forward_distance = 0.3
-move_backward_distance = 0.2
+move_forward_distance = 0.2
+move_backward_distance = 0.1
 # for id == 4, 11
 forward_distance = 0.2
-backward_distance = 0.05
+backward_distance = 0.1
 
-rotate_bound = 10
 is_land = 0
+is_rotate = 0
+rotate_done = 0
 
 while True:
     if is_land:
@@ -132,16 +134,21 @@ while True:
                             drone.move_right(tvec[0][0][0] / 100)
                         else:
                             drone.move_left(-(tvec[0][0][0]) / 100)
-                        continue
-                    else:
                         drone.land()
                         is_land = 1
                 elif tvec[0][0][2] > drone_distance2:
                     drone.move_forward(forward_distance)
                 elif tvec[0][0][2] < drone_distance2:
-                    drone.move_backward(back_distance)
+                    drone.move_backward(backward_distance)
 
             elif aruco_id == 11:
+                if rotate_done == 1:
+                    continue
+                if is_rotate == 1:
+                    drone.rotate_cw(90)
+                    rotate_done = 1
+                    continue
+
                 # right or left
                 if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
                     if tvec[0][0][0] > 0:
@@ -158,13 +165,12 @@ while True:
                             drone.move_right(tvec[0][0][0] / 100)
                         else:
                             drone.move_left(-(tvec[0][0][0]) / 100)
-                        continue
-                    else:
-                        drone.rotate_cw(90)
+                        time.sleep(1)
+                        is_rotate = 1
                 elif tvec[0][0][2] > drone_distance1:
                     drone.move_forward(forward_distance)
                 elif tvec[0][0][2] < drone_distance1:
-                    drone.move_backward(back_distance)
+                    drone.move_backward(backward_distance)
 
 
     # show frame
@@ -175,5 +181,8 @@ while True:
     key = cv2.waitKey(1)
     if key != -1:
         drone.keyboard(key)
+
+    # sleep
+    time.sleep(0.01)
 
 f.release()
