@@ -63,7 +63,7 @@ drone_distance1 = 95 # for id == 11
 drone_distance2 = 60 # for id == 4
 distance_error = 10
 horizon_error = 5
-lr_bound = 15
+lr_bound = 20
 rotate_bound = 10
 
 # meters
@@ -73,6 +73,8 @@ move_backward_distance = 0.1
 # for id == 4, 11
 forward_distance = 0.2
 backward_distance = 0.1
+
+lr_distance = 0.2
 
 is_land = 0
 is_rotate = 0
@@ -121,9 +123,9 @@ while True:
                 # right or left
                 if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
                     if tvec[0][0][0] > 0:
-                        drone.move_right(tvec[0][0][0] / 100)
+                        drone.move_right(lr_distance)
                     else:
-                        drone.move_left(-(tvec[0][0][0]) / 100)
+                        drone.move_left(lr_distance)
 
                 # forward or backward
                 lowest_distance = drone_distance2 - distance_error
@@ -144,6 +146,7 @@ while True:
             elif aruco_id == 11:
                 if rotate_done == 1:
                     continue
+
                 if is_rotate == 1:
                     drone.rotate_cw(90)
                     rotate_done = 1
@@ -152,9 +155,9 @@ while True:
                 # right or left
                 if tvec[0][0][0] > lr_bound or tvec[0][0][0] < -lr_bound:
                     if tvec[0][0][0] > 0:
-                        drone.move_right(tvec[0][0][0] / 100)
+                        drone.move_right(lr_distance)
                     else:
-                        drone.move_left(-(tvec[0][0][0]) / 100)
+                        drone.move_left(lr_distance)
 
                 # forward or backward
                 lowest_distance = drone_distance1 - distance_error
@@ -165,7 +168,7 @@ while True:
                             drone.move_right(tvec[0][0][0] / 100)
                         else:
                             drone.move_left(-(tvec[0][0][0]) / 100)
-                        time.sleep(1)
+                        time.sleep(0.1)
                         is_rotate = 1
                 elif tvec[0][0][2] > drone_distance1:
                     drone.move_forward(forward_distance)
