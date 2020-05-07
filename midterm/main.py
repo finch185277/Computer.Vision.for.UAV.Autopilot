@@ -68,11 +68,11 @@ rotate_bound = 10
 
 # meters
 # for id == 1
-move_forward_distance = 0.2
-move_backward_distance = 0.1
+move_forward_distance = 0.25
+move_backward_distance = 0.2
 # for id == 4, 11
-forward_distance = 0.2
-backward_distance = 0.1
+forward_distance = 0.25
+backward_distance = 0.2
 lr_distance = 0.2
 
 is_land = 0
@@ -86,7 +86,11 @@ while True:
     frame = drone.read()
     markerCorners, markerlds, rejectedCandidates = cv2.aruco.detectMarkers(frame, dictionary, parameters = parameters)
     if markerlds is not None:
-        aruco_id = markerlds[0][0]
+
+        aruco_id = 100
+        for id in markerlds[0]:
+            if id < aruco_id:
+                aruco_id = id
 
         frame = cv2.aruco.drawDetectedMarkers(frame, markerCorners, markerlds)
         rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(markerCorners, 14.5, mtx, dist)
