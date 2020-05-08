@@ -139,6 +139,7 @@ while True:
                             drone.move_right(tvec[0][0][0] / 100)
                         else:
                             drone.move_left(-(tvec[0][0][0]) / 100)
+                        time.sleep(0.1)
                         drone.land()
                         is_land = 1
                 elif tvec[0][0][2] > drone_distance2:
