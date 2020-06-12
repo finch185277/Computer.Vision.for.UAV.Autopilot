@@ -97,6 +97,8 @@ def find_object(object_id):
     if key != -1:
         drone.keyboard(key)
 
+    time.sleep(0.01)
+
     return object_distance
 
 def find_aruco(id, bound):
@@ -140,6 +142,8 @@ def find_aruco(id, bound):
     key = cv2.waitKey(1)
     if key != -1:
         drone.keyboard(key)
+
+    time.sleep(0.01)
 
     return is_job_done
 
@@ -219,6 +223,8 @@ drone = tello.Tello('', 8889)
 
 time.sleep(5)
 
+state_wait_time = 3
+
 # object id
 horse_id = 17
 traffic_light_id = 9
@@ -232,6 +238,7 @@ horse_bound = 60
 lr_distance = 0.2
 forward_distance = 0.2
 horse_forward = 0.9
+near_traffic_light_distance = 0.5
 
 # bool
 is_land = 0
@@ -239,11 +246,17 @@ is_land = 0
 # horse part
 is_move_forward1 = 0
 is_move_forward2 = 0
-is_move_left = 0
-is_move_right = 0
+is_move_left1 = 0
+is_move_right1 = 0
 
 # lane part
 is_move_forward3 = 0
+is_move_forward4 = 0
+is_move_forward5 = 0
+is_move_forward6 = 0
+is_move_left2 = 0
+is_rotate_cw = 0
+is_rotate_ccw = 0
 is_flip = 0
 
 while True:
@@ -253,62 +266,104 @@ while True:
     frame = drone.read()
 
     # horse part
-    while(is_move_left == 0):
+    while(is_move_left1 == 0):
         horse_distance = find_object(horse_id)
         if(horse_distance == -1):
             continue
         if(horse_distance < horse_bound and horse_distance > 0):
             drone.move_left(horse_forward)
-            is_move_left = 1
-            time.sleep(5)
+            is_move_left1 = 1
+            time.sleep(state_wait_time)
         elif(horse_distance > horse_bound):
             drone.move_forward(forward_distance)
 
-    while(is_move_left == 1 and is_move_forward1 == 0):
+    while(is_move_left1 == 1 and is_move_forward1 == 0):
         is_job_done = find_aruco(1, 50)
         if(is_job_done == 1):
             is_move_forward1 = 1
+            time.sleep(state_wait_time)
 
-    if(is_move_forward1 == 1 and is_move_right == 0):
-        time.sleep(5)
+    if(is_move_forward1 == 1 and is_move_right1 == 0):
         drone.move_right(horse_forward)
-        is_move_right = 1
+        is_move_right1 = 1
+        time.sleep(state_wait_time)
 
-    if(is_move_right == 1 and is_move_forward2 == 0):
-        time.sleep(5)
+    if(is_move_right1 == 1 and is_move_forward2 == 0):
         drone.move_forward(horse_forward)
         is_move_forward2 = 1
+        time.sleep(state_wait_time)
 
-    # done!!
+    # # done!!
     # if(is_move_forward2 == 1):
-    #     time.sleep(5)
     #     is_land = 1
     #     drone.land()
+    #     time.sleep(state_wait_time)
 
     # lane part
     while(is_move_forward2 == 1 and is_move_forward3 == 0):
         is_job_done = find_aruco(11, 130)
-        if(is_job_done == 1)
+        if(is_job_done == 1):
             is_move_forward3 = 1
+            time.sleep(state_wait_time)
 
     if (is_move_forward3 == 1 and is_rotate_180 == 0):
-        time.sleep(5)
         drone.rotate_cw(180)
         is_rotate_180 = 1
+        time.sleep(state_wait_time)
 
     while(is_rotate_180 == 1 and is_flip == 0):
-        time.sleep(3)
         object_distance = find_object(17)
-        if(object_distance == -1)
+        if(object_distance == -1):
             drone.move_left(lr_distance)
             continue
         drone.rotate_cw(360)
         is_flip == 1
+        time.sleep(state_wait_time)
 
-    if(is_flip == 1):
-        time.sleep(5)
+    # # done!!
+    # if(is_flip == 1):
+    #     is_land = 1
+    #     drone.land()
+    #     time.sleep(state_wait_time)
+
+    if(is_flip == 1 and is_move_left2 == 0):
+        drone.move_left(near_traffic_light_distance)
+        is_move_left2 = 1
+        time.sleep(state_wait_time)
+
+    if(is_move_left2 == 1 and is_move_forward4 == 0):
+        is_job_done = find_aruco(14, 50)
+        if(is_job_done == 1):
+            is_move_forward4 = 1
+            time.sleep(state_wait_time)
+
+    if(is_move_forward4 == 1 and is_rotate_ccw == 0):
+        drone.rotate_ccw(90)
+        is_rotate_ccw = 1
+        time.sleep(state_wait_time)
+
+    if(is_rotate_ccw == 1 and is_move_forward5 == 0):
+        is_job_done = find_aruco(45, 60)
+        if(is_job_done == 1):
+            is_move_forward5 = 1
+            time.sleep(state_wait_time)
+
+    if(is_move_forward5 == 1 and is_rotate_cw == 0):
+        drone.rotate_cw(90)
+        is_rotate_cw = 1
+        time.sleep(state_wait_time)
+
+    if(is_rotate_cw == 1 and is_move_forward6 == 0):
+        is_job_done = find_aruco(22, 60)
+        if(is_job_done == 1):
+            is_move_forward6 = 1
+            time.sleep(state_wait_time)
+
+    # done!!
+    if(is_move_forward6 == 1):
         is_land = 1
         drone.land()
+        time.sleep(state_wait_time)
 
     # show frame
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
