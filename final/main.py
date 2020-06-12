@@ -280,10 +280,10 @@ while True:
         is_move_forward2 = 1
 
     # done!!
-    if(is_move_forward2 == 1):
-        time.sleep(5)
-        is_land = 1
-        drone.land()
+    # if(is_move_forward2 == 1):
+    #     time.sleep(5)
+    #     is_land = 1
+    #     drone.land()
 
     # lane part
     while(is_move_forward2 == 1 and is_move_forward3 == 0):
