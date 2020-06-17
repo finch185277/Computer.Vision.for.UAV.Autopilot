@@ -259,7 +259,7 @@ traffic_light_id = 9
 lr_bound = 15
 horse_h = 20
 horse_distance = 60
-lane_distance = 140
+lane_distance = 130
 aruco_distance = 60
 
 # meters
@@ -267,6 +267,7 @@ lr_distance = 0.2
 forward_distance = 0.2
 horse_lr_distance = 0.9
 horse_forward_distance = 1.2
+fast_forward_distance = 1.2
 
 # bool
 is_land = 0
@@ -282,6 +283,7 @@ is_move_forward3 = 0
 is_move_forward4 = 0
 is_move_forward5 = 0
 is_move_forward6 = 0
+is_move_forward7 = 0
 is_move_left2 = 0
 is_rotate_cw = 0
 is_rotate_ccw = 0
@@ -319,6 +321,8 @@ while True:
         time.sleep(state_wait_time)
 
     if(is_move_left1 == 1 and is_move_forward2 == 0):
+        is_job_done = find_aruco(11, lane_distance)
+        time.sleep(state_wait_time)
         drone.move_forward(horse_forward_distance)
         is_move_forward2 = 1
         time.sleep(state_wait_time)
@@ -377,13 +381,18 @@ while True:
         time.sleep(state_wait_time)
 
     if(is_rotate_cw == 1 and is_move_forward6 == 0):
+        drone.move_forward(fast_forward_distance)
+        is_move_forward6 = 1
+        time.sleep(state_wait_time)
+
+    if(is_move_forward6 == 1 and is_move_forward7 == 0):
         is_job_done = find_aruco(22, aruco_distance)
         if(is_job_done == 1):
-            is_move_forward6 = 1
+            is_move_forward7 = 1
             time.sleep(state_wait_time)
 
     # done!!
-    if(is_move_forward6 == 1):
+    if(is_move_forward7 == 1):
         is_land = 1
         drone.land()
         time.sleep(state_wait_time)
