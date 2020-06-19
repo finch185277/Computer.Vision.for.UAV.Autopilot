@@ -264,10 +264,10 @@ aruco_distance = 60
 
 # meters
 lr_distance = 0.2
-forward_distance = 0.2
+forward_distance = 0.25
 horse_lr_distance = 0.9
 horse_forward_distance = 1.2
-fast_forward_distance = 1.2
+fast_forward_distance = 1.1
 
 # bool
 is_land = 0
